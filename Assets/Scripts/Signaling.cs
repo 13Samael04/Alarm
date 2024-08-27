@@ -13,32 +13,55 @@ public class Signaling : MonoBehaviour
     private AudioSource _audioSource;
     private Coroutine _coroutine;
 
-    private void Start()
+    private void Awake()
     {
         _audioSource = GetComponent<AudioSource>();
+    }
+
+    private void Start()
+    {
         _audioSource.volume = _minVolume;
     }
 
-    public void SetVolume(bool isEnter)
+    private void OnTriggerEnter(Collider other)
     {
-        float targetVolume;
+        if (other.TryGetComponent<Player>(out Player player))
+        { 
+            TurnOnAlarm(); 
+        }
+    }
 
-        if(_coroutine != null)
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.TryGetComponent<Player>(out Player player))
+        {
+            TurnOffAlarm();
+        }
+    }
+
+    private  void SetVolume(float volume)
+    {
+        if (_coroutine != null)
         {
             StopCoroutine(_coroutine);
         }
 
-        if(isEnter == true)
+        _coroutine = StartCoroutine(ChangeVolume(volume));
+    }
+
+    private void TurnOnAlarm()
+    {
+        if (_audioSource.isPlaying == false)
         {
-            targetVolume = _maxVolume;
             _audioSource.Play();
         }
-        else
-        {
-            targetVolume= _minVolume;
-        }
 
-        _coroutine = StartCoroutine(ChangeVolume(targetVolume));
+        SetVolume(_maxVolume);
+    }
+
+    private void TurnOffAlarm() 
+    {
+        SetVolume(_minVolume); 
     }
 
     private IEnumerator ChangeVolume(float targetVolume)
